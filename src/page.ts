@@ -3,30 +3,32 @@ import { config } from ".././config";
 export default class Page {
   apiUrl: string = "https://api.scripture.api.bible/v1/bibles";
   bibleLang: string = "1c9761e0230da6e0-01";
+  booksList: string[];
+  currentBook: number = 0;
   chaptersList: string[];
   currentChapter: number = 0;
   versesList: string[];
   currentVerse: number = 0;
   constructor() {
     this.render();
-    this.getAllChaptersNames();
+    this.getAllBookNames();
   }
 
-  async getAllChaptersNames() {
-    const getChapter = await fetch(`${this.apiUrl}/${this.bibleLang}/books`, {
+  async getAllBookNames() {
+    const getBook: any = await fetch(`${this.apiUrl}/${this.bibleLang}/books`, {
       headers: {
         "api-key": config.bibleApiKey
       }
     });
-    const chapterRes = await getChapter.json();
-    this.chaptersList = chapterRes.data.map((el: any) => el.id);
-    this.getAllVersesIdsFromChapter();
+    const bookRes: any = await getBook.json();
+    this.booksList = bookRes.data.map((el: any) => el.id);
+    this.getAllChapters();
   }
 
-  async getAllVersesIdsFromChapter() {
-    const getChapterId = await fetch(
+  async getAllChapters() {
+    const getChapterId: any = await fetch(
       `${this.apiUrl}/${this.bibleLang}/books/${
-        this.chaptersList[this.currentChapter]
+        this.booksList[this.currentBook]
       }/chapters`,
       {
         headers: {
@@ -34,35 +36,62 @@ export default class Page {
         }
       }
     );
-    const chapterIdRes = await getChapterId.json();
-    this.versesList = chapterIdRes.data.map((el: any) => el.id);
-    this.getVerseText(this.versesList[this.currentVerse]);
+    const chapterIdRes: any = await getChapterId.json();
+    this.chaptersList = chapterIdRes.data.map((el: any) => el.id);
+    this.getChapter();
   }
 
-  async getVerseText(verseId: string) {
-    const res = await fetch(
-      `${this.apiUrl}/${this.bibleLang}/chapters/${verseId}`,
+  async getChapter() {
+    const getChapterData: any = await fetch(
+      `${this.apiUrl}/${this.bibleLang}/chapters/${
+        this.chaptersList[this.currentChapter]
+      }`,
       {
         headers: {
           "api-key": config.bibleApiKey
         }
       }
     );
-    const jsonRes = await res.json();
-    document
-      .querySelector(".page-text")
-      .insertAdjacentHTML("beforeend", JSON.stringify(jsonRes.data.content));
+    const chapterRes: any = await getChapterData.json();
+    this.versesList = chapterRes.data.content.split("</p>");
+    if (chapterRes.data.number == "intro") {
+      let bookTitle: string = this.versesList[0].replace('p class="mt1"', "h1");
+      bookTitle += "</h1>";
+      this.versesList[0] = bookTitle;
+    } else {
+      this.versesList.unshift(`<h2>${chapterRes.data.reference}</h2>`);
+    }
+    this.currentVerse = 0;
     this.fillPage();
   }
 
   fillPage() {
-    if (
+    while (
       document.querySelector(".page-text").clientHeight <
-      document.querySelector(".page").clientHeight - 50
+        document.querySelector(".page").clientHeight &&
+      this.currentVerse <= this.versesList.length - 1
     ) {
-      // this.currentVerse += 1;
-      console.log(this.currentVerse);
-      this.getVerseText(this.versesList[this.currentVerse]);
+      document
+        .querySelector(".page-text")
+        .insertAdjacentHTML(
+          "beforeend",
+          `${this.versesList[this.currentVerse]}</p>`
+        );
+      this.currentVerse += 1;
+
+      if (this.currentVerse == this.versesList.length - 1) {
+        this.currentChapter += 1;
+        this.getChapter();
+      }
+    }
+    if (
+      document.querySelector(".page-text").clientHeight >
+      document.querySelector(".page").clientHeight
+    ) {
+      document
+        .querySelector(".page-text")
+        .removeChild(document.querySelector(".page-text").lastChild);
+      this.currentVerse -= 1;
     }
   }
 
