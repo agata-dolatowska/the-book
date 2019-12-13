@@ -12,8 +12,22 @@ export default class Page {
   constructor() {
     this.render();
     this.getAllBookNames();
+    document
+      .querySelector(".next")
+      .addEventListener("click", () => this.nextPage());
   }
-
+  nextPage() {
+    if (
+      !(
+        this.currentBook == this.booksList.length - 1 &&
+        this.currentChapter == this.chaptersList.length - 1 &&
+        this.currentVerse == this.versesList.length
+      )
+    ) {
+      document.querySelector(".page-text").innerHTML = "";
+      this.fillPage();
+    }
+  }
   async getAllBookNames() {
     const getBook: any = await fetch(`${this.apiUrl}/${this.bibleLang}/books`, {
       headers: {
@@ -69,7 +83,9 @@ export default class Page {
     while (
       document.querySelector(".page-text").clientHeight <
         document.querySelector(".page").clientHeight &&
-      this.currentVerse <= this.versesList.length - 1
+      this.currentVerse <= this.versesList.length - 1 &&
+      this.currentChapter <= this.chaptersList.length - 1 &&
+      this.currentBook <= this.booksList.length - 1
     ) {
       document
         .querySelector(".page-text")
@@ -79,9 +95,22 @@ export default class Page {
         );
       this.currentVerse += 1;
 
-      if (this.currentVerse == this.versesList.length - 1) {
+      if (
+        this.currentVerse == this.versesList.length - 1 &&
+        this.currentChapter < this.chaptersList.length - 1
+      ) {
         this.currentChapter += 1;
         this.getChapter();
+      }
+
+      if (
+        this.currentVerse == this.versesList.length - 1 &&
+        this.currentChapter == this.chaptersList.length - 1 &&
+        this.currentBook < this.booksList.length - 1
+      ) {
+        this.currentBook += 1;
+        this.currentChapter = 0;
+        this.getAllChapters();
       }
     }
     if (
@@ -91,7 +120,9 @@ export default class Page {
       document
         .querySelector(".page-text")
         .removeChild(document.querySelector(".page-text").lastChild);
-      this.currentVerse -= 1;
+      if (this.currentVerse > 0) {
+        this.currentVerse -= 1;
+      }
     }
   }
 
@@ -100,8 +131,8 @@ export default class Page {
         <div class='page'>
           <div class='page-text'></div>
         </div>
-        <button>Previous</button>
-        <button>Next</button>
+        <button class='previous'>Previous</button>
+        <button class='next'>Next</button>
         `;
     document.querySelector("body").insertAdjacentHTML("afterbegin", html);
   }
