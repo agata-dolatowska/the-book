@@ -1,4 +1,7 @@
 import "./css/style.scss";
-import Page from "./page";
+import { config } from "../config";
+import BookData from "./bookdata";
+import DisplayPage from "./displaypage";
 
-const page = new Page();
+export const bookData = new BookData(config.bibleApiKey);
+const page = new DisplayPage();

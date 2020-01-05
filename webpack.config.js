@@ -24,7 +24,7 @@ module.exports = {
   plugins: [
     new CleanWebpackPlugin(),
     new HtmlWebpackPlugin({
-      title: "Output Management"
+      template: "src/html/index.html"
     })
   ],
   resolve: {
