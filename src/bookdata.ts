@@ -16,12 +16,9 @@ export default class BookData {
     return allBooksData.json();
   }
 
-  async getBooksChaptersData(
-    currentBook: number,
-    booksIdsList: string[]
-  ): Promise<any> {
+  async getBooksChaptersData(bookId: string): Promise<any> {
     const booksChaptersData: any = await fetch(
-      `${this.apiUrl}/${this.bibleLang}/books/${booksIdsList[currentBook]}/chapters`,
+      `${this.apiUrl}/${this.bibleLang}/books/${bookId}/chapters`,
       {
         headers: {
           "api-key": this.apiKey
@@ -31,12 +28,9 @@ export default class BookData {
     return booksChaptersData.json();
   }
 
-  async getChapterData(
-    currentChapter: number,
-    booksChaptersIdsList: string[]
-  ): Promise<any> {
+  async getChapterData(chapterId: string): Promise<any> {
     const chapterVerses: any = await fetch(
-      `${this.apiUrl}/${this.bibleLang}/chapters/${booksChaptersIdsList[currentChapter]}`,
+      `${this.apiUrl}/${this.bibleLang}/chapters/${chapterId}`,
       {
         headers: {
           "api-key": this.apiKey
