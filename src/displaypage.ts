@@ -13,10 +13,15 @@ export default class DisplayPage {
     verseId: number;
     text: string;
   }[] = [];
-
   currentVerse: { [key: string]: number } = {
-    bookId: 0,
-    chapterId: 0,
+    bookId:
+      localStorage.getItem("bookId") === null
+        ? 0
+        : parseInt(localStorage.getItem("bookId")),
+    chapterId:
+      localStorage.getItem("chapterId") === null
+        ? 0
+        : parseInt(localStorage.getItem("chapterId")),
     verseId: -1
   };
   beginVerse: { [key: string]: number } = {
@@ -63,6 +68,12 @@ export default class DisplayPage {
         this.booksChaptersIdsList[this.currentVerse.chapterId]
       )
     );
+    this.currentVerse.verseId =
+      localStorage.getItem("verseText") === null
+        ? -1
+        : this.versesList.findIndex(
+            x => x.text == localStorage.getItem("verseText")
+          ) - 1;
     await this.fillPage();
   })();
 
@@ -130,6 +141,14 @@ export default class DisplayPage {
       this.beginVerse.bookId = 0;
       this.beginVerse.chapterId = 0;
       this.beginVerse.verseId = 0;
+    }
+    localStorage.setItem("bookId", this.currentVerse.bookId.toString());
+    localStorage.setItem("chapterId", this.currentVerse.chapterId.toString());
+    if (this.currentVerse.verseId > 0) {
+      localStorage.setItem(
+        "verseText",
+        this.versesList[this.currentVerse.verseId + kupa].text
+      );
     }
   }
 
