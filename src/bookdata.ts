@@ -7,17 +7,20 @@ export default class BookData {
     this.apiKey = configKey;
   }
 
-  async getAllBooksData(): Promise<any> {
-    const allBooksData = await fetch(`${this.apiUrl}/${this.bibleLang}/books`, {
-      headers: {
-        "api-key": this.apiKey
+  async getAllBooksData(): Promise<JSON> {
+    const allBooksData: Response = await fetch(
+      `${this.apiUrl}/${this.bibleLang}/books`,
+      {
+        headers: {
+          "api-key": this.apiKey
+        }
       }
-    });
+    );
     return allBooksData.json();
   }
 
-  async getBooksChaptersData(bookId: string): Promise<any> {
-    const booksChaptersData: any = await fetch(
+  async getBooksChaptersData(bookId: string): Promise<JSON> {
+    const booksChaptersData: Response = await fetch(
       `${this.apiUrl}/${this.bibleLang}/books/${bookId}/chapters`,
       {
         headers: {
@@ -28,8 +31,8 @@ export default class BookData {
     return booksChaptersData.json();
   }
 
-  async getChapterData(chapterId: string): Promise<any> {
-    const chapterVerses: any = await fetch(
+  async getChapterData(chapterId: string): Promise<JSON> {
+    const chapterVerses: Response = await fetch(
       `${this.apiUrl}/${this.bibleLang}/chapters/${chapterId}`,
       {
         headers: {
@@ -38,5 +41,17 @@ export default class BookData {
       }
     );
     return chapterVerses.json();
+  }
+
+  async getAllBooksNamesWithChapters(): Promise<JSON> {
+    const bibleContents: Response = await fetch(
+      `${this.apiUrl}/${this.bibleLang}/books?include-chapters=true`,
+      {
+        headers: {
+          "api-key": this.apiKey
+        }
+      }
+    );
+    return bibleContents.json();
   }
 }

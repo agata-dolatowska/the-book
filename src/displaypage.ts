@@ -14,15 +14,9 @@ export default class DisplayPage {
     text: string;
   }[] = [];
   currentVerse: { [key: string]: number } = {
-    bookId:
-      localStorage.getItem("bookId") === null
-        ? 0
-        : parseInt(localStorage.getItem("bookId")),
-    chapterId:
-      localStorage.getItem("chapterId") === null
-        ? 0
-        : parseInt(localStorage.getItem("chapterId")),
-    verseId: -1
+    bookId: 0,
+    chapterId: 0,
+    verseId: 0
   };
   beginVerse: { [key: string]: number } = {
     bookId: 0,
@@ -56,6 +50,9 @@ export default class DisplayPage {
           .getPropertyValue("padding-bottom")
       );
     this.textContainer = document.querySelector(".page-text");
+
+    this.setCurrentVerse();
+
     this.getAllBooksIds(await bookData.getAllBooksData());
 
     this.getAllChaptersIds(
@@ -77,8 +74,24 @@ export default class DisplayPage {
     await this.fillPage();
   })();
 
+  setCurrentVerse() {
+    // this.currentVerse = {
+    //   bookId:
+    //     localStorage.getItem("bookId") === null
+    //       ? 0
+    //       : parseInt(localStorage.getItem("bookId")),
+    //   chapterId:
+    //     localStorage.getItem("chapterId") === null
+    //       ? 0
+    //       : parseInt(localStorage.getItem("chapterId")),
+    //   verseId: -1
+    //   // verseId: 0
+    // };
+  }
+
   getAllBooksIds(allBooksData: any) {
     this.booksIdsList = allBooksData.data.map((el: any) => el.id);
+    // console.log(this.booksIdsList);
   }
 
   getAllChaptersIds(allBooksChaptersData: any) {
@@ -142,14 +155,14 @@ export default class DisplayPage {
       this.beginVerse.chapterId = 0;
       this.beginVerse.verseId = 0;
     }
-    localStorage.setItem("bookId", this.currentVerse.bookId.toString());
-    localStorage.setItem("chapterId", this.currentVerse.chapterId.toString());
-    if (this.currentVerse.verseId > 0) {
-      localStorage.setItem(
-        "verseText",
-        this.versesList[this.currentVerse.verseId + kupa].text
-      );
-    }
+    // localStorage.setItem("bookId", this.currentVerse.bookId.toString());
+    // localStorage.setItem("chapterId", this.currentVerse.chapterId.toString());
+    // if (this.currentVerse.verseId > 0) {
+    //   localStorage.setItem(
+    //     "verseText",
+    //     this.versesList[this.currentVerse.verseId + kupa].text
+    //   );
+    // }
   }
 
   setLastVerseOnPage() {
