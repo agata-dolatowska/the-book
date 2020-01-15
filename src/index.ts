@@ -11,4 +11,4 @@ export const tableOfContents = new TableOfContents();
 const readingProgressBar = new ReadingProgressBar(
   tableOfContents.bibleContents
 );
-console.log(tableOfContents.bibleContents.length);
+// console.log(tableOfContents.bibleContents.length);

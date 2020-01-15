@@ -18,11 +18,11 @@ export default class TableOfContents {
   private chapterLength: number;
   private bookId: number;
 
-  constructor() {
-    // this.getBibleData(await bookData.getAllBooksNamesWithChapters());
-  }
+  constructor() {}
   private init = (async () => {
     // new ReadingProgressBar(this.bibleContents);
+    this.getBibleData(await bookData.getAllBooksNamesWithChapters());
+
     this.render();
     this.bookNameInput = document.querySelector(".book-name-input");
     this.bookNameInput.addEventListener("input", () => this.findBook());
