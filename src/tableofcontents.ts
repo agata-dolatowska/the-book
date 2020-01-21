@@ -1,6 +1,5 @@
 import { bookData } from "./index";
 import { page } from "./index";
-import ReadingProgressBar from "./progressbar";
 
 export default class TableOfContents {
   bibleContents: {
@@ -18,12 +17,14 @@ export default class TableOfContents {
   private chapterLength: number;
   private bookId: number;
 
-  constructor() {}
   private init = (async () => {
-    // new ReadingProgressBar(this.bibleContents);
-    this.getBibleData(await bookData.getAllBooksNamesWithChapters());
-
+    this.getBibleData();
     this.render();
+
+    document
+      .querySelector(".show-table-of-contents")
+      .addEventListener("click", () => this.setVisibility());
+
     this.bookNameInput = document.querySelector(".book-name-input");
     this.bookNameInput.addEventListener("input", () => this.findBook());
 
@@ -34,23 +35,27 @@ export default class TableOfContents {
 
     this.chapterNumberInput = document.querySelector(".chapter-number-input");
 
-    this.changeChapterButton = document.querySelector(".change-chapter");
+    this.changeChapterButton = document.querySelector(".change-chapter-button");
     this.changeChapterButton.addEventListener("click", e =>
       this.changeChapter(e)
     );
   })();
 
-  async getBibleData(bookContents: JSON) {
-    let kupa = JSON.stringify(bookContents);
-    let gunwo = JSON.parse(kupa);
-    let laxa = gunwo.data;
+  async getBibleData() {
+    await this.saveBibleData(await bookData.getAllBooksNamesWithChapters());
+    return Object.freeze(this.bibleContents);
+  }
 
-    for (let x = 0; x < laxa.length; x++) {
+  private async saveBibleData(bookContents: JSON) {
+    let bibleDataStr = JSON.stringify(bookContents);
+    let bibleDataArr = JSON.parse(bibleDataStr);
+
+    for (let x = 0; x < bibleDataArr.data.length; x++) {
       this.bibleContents.push({
         bookIdNum: x,
-        bookId: laxa[x].id,
-        bookNameLong: laxa[x].nameLong,
-        chapters: laxa[x].chapters
+        bookId: bibleDataArr.data[x].id,
+        bookNameLong: bibleDataArr.data[x].nameLong,
+        chapters: bibleDataArr.data[x].chapters
       });
     }
   }
@@ -76,6 +81,10 @@ export default class TableOfContents {
     }
   }
 
+  private setVisibility() {
+    document.querySelector(".table-of-contents").classList.toggle("hidden");
+  }
+
   private showBookNames(): string {
     let foundBooks = this.bibleContents.filter(book =>
       book.bookNameLong
@@ -94,7 +103,7 @@ export default class TableOfContents {
   private setBookNameFromAutocomplete(e: MouseEvent) {
     this.chapterNumberInput.focus();
     const clickedElement = e.target as HTMLElement;
-    this.bookNameInput.value = clickedElement.innerHTML;
+    this.bookNameInput.value = clickedElement.innerText;
     this.findBook();
   }
 
@@ -144,19 +153,26 @@ export default class TableOfContents {
 
   private render() {
     const html: string = `
-    <div class='table-of-contents'>
-    <form class='chapter-form'>
+    <div class="menu">
+    <button class='show-table-of-contents button'>Go to...</button>
+    <div class='table-of-contents hidden'>
+    <form class='table-of-contents__form'>
       <div class='book-name'>
-      <label for="book-name-input">Go to book</label>
-        <input id="book-name-input" class='book-name-input' type="text" placeholder="book name" autocomplete="off" required>
-        <div class="book-name-autocomplete"></div>
+        <label for="book-name-input">Go to book</label>
+        <div class='autocomplete-container'>
+          <input id="book-name-input" class='book-name-input table-of-contents__input' type="text" placeholder="book name" autocomplete="off" required>
+          <div class="book-name-autocomplete"></div>
+        </div>
       </div>
-      <label for="chapter-number-input">Chapter number</label>
-      <input id="chapter-number-input" class='chapter-number-input' type="number" placeholder="chapter number" min=0 step=1 required>
-      <span class="chapter-length"></span>
-      <button class="change-chapter">Change chapter</button>
+      <div class='chapter-number'>
+        <label for="chapter-number-input">Chapter number</label>
+        <input id="chapter-number-input" class='chapter-number-input table-of-contents__input' type="number" placeholder="chapter number" min=0 step=1 required>
+        <span class="chapter-length"></span>
+      </div>
+      <button class="change-chapter-button button">Change chapter</button>
     </form>
+    </div>
     </div>`;
-    document.querySelector("body").insertAdjacentHTML("afterbegin", html);
+    document.querySelector("main").insertAdjacentHTML("afterbegin", html);
   }
 }

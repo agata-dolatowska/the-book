@@ -1,4 +1,4 @@
-import { tableOfContents } from "./index";
+import { tableOfContents, page } from "./index";
 
 export default class ReadingProgressBar {
   bibleContents: {
@@ -9,30 +9,55 @@ export default class ReadingProgressBar {
       id: number;
     }[];
   }[] = [];
-  constructor(
-    bookContent: {
-      bookId: string;
-      bookIdNum: number;
-      bookNameLong: string;
-      chapters: {
-        id: number;
-      }[];
-    }[]
-  ) {
-    this.bibleContents = bookContent;
-  }
-  init = (() => {
+
+  private amountOfChapters: number = 0;
+  private currentChapterNumber: number = 0;
+
+  private init = (() => {
     this.render();
     this.countAmountOfChapters();
   })();
 
-  countAmountOfChapters() {
-    console.log("heloł :3");
-    console.log(tableOfContents.bibleContents[0]);
-    // console.log(this.bibleContents);
+  private countAmountOfChapters() {
+    // tableOfContents.getBibleData().then(bibleContent => {
+    // console.log(bibleContent);
+    // this.bibleContents = bibleContent;
+    // console.log(bibleContent);
+    // for (let x of bibleContent) {
+    //   this.amountOfChapters += x.chapters.length;
+    // }
+    // this.countCurrentChapterNumber();
+    // });
   }
 
-  render() {
+  countCurrentChapterNumber() {
+    this.currentChapterNumber = 0;
+    for (let x = 0; x < this.bibleContents.length - 1; x++) {
+      for (let y = 0; y < this.bibleContents[x].chapters.length - 1; y++) {
+        if (x == page.currentVerse.bookId && y == page.currentVerse.chapterId) {
+          x = this.bibleContents.length - 1;
+          y =
+            this.bibleContents[this.bibleContents.length - 1].chapters.length -
+            1;
+        } else {
+          this.currentChapterNumber += 1;
+        }
+      }
+    }
+    this.setProgressBarWidth();
+  }
+
+  private setProgressBarWidth() {
+    const progressBar: HTMLElement = document.querySelector(".progress-bar");
+    const witdh: string = (
+      (this.currentChapterNumber / this.amountOfChapters) *
+      100
+    ).toPrecision(1);
+
+    progressBar.style.setProperty("--progressBarWidth", witdh + "%");
+  }
+
+  private render() {
     const html: string = `
         <div class="progress-bar-container">
             <div class="progress-bar"></div>

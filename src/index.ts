@@ -8,7 +8,4 @@ import ReadingProgressBar from "./progressBar";
 export const bookData = new BookData(config.bibleApiKey);
 export const page = new DisplayPage();
 export const tableOfContents = new TableOfContents();
-const readingProgressBar = new ReadingProgressBar(
-  tableOfContents.bibleContents
-);
-// console.log(tableOfContents.bibleContents.length);
+export const readingProgressBar = new ReadingProgressBar();

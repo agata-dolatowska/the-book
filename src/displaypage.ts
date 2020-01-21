@@ -1,9 +1,10 @@
 import { bookData } from "./index";
+import { readingProgressBar } from "./index";
 
 export default class DisplayPage {
-  readingDirection: string = "forward";
-  pageSize: number;
-  textContainer: HTMLElement;
+  private readingDirection: string = "forward";
+  private pageSize: number;
+  private textContainer: HTMLElement;
 
   booksIdsList: string[];
   booksChaptersIdsList: string[];
@@ -29,7 +30,7 @@ export default class DisplayPage {
     verseId: 0
   };
 
-  init = (async () => {
+  private init = (async () => {
     this.render();
     document
       .querySelector(".previous")
@@ -37,22 +38,12 @@ export default class DisplayPage {
     document
       .querySelector(".next")
       .addEventListener("click", () => this.nextPage());
-    this.pageSize =
-      document.querySelector(".page").clientHeight -
-      parseInt(
-        window
-          .getComputedStyle(document.querySelector(".page"), null)
-          .getPropertyValue("padding-top")
-      ) -
-      parseInt(
-        window
-          .getComputedStyle(document.querySelector(".page"), null)
-          .getPropertyValue("padding-bottom")
-      );
+
+    this.setPageSize();
+
     this.textContainer = document.querySelector(".page-text");
 
     this.setCurrentVerse();
-
     this.getAllBooksIds(await bookData.getAllBooksData());
 
     this.getAllChaptersIds(
@@ -65,33 +56,57 @@ export default class DisplayPage {
         this.booksChaptersIdsList[this.currentVerse.chapterId]
       )
     );
+    this.findBeginningVerseId();
+    await this.fillPage();
+  })();
+
+  private setPageSize() {
+    this.pageSize =
+      document.querySelector(".page").clientHeight -
+      parseInt(
+        window
+          .getComputedStyle(document.querySelector(".page"), null)
+          .getPropertyValue("padding-top")
+      ) -
+      parseInt(
+        window
+          .getComputedStyle(document.querySelector(".page"), null)
+          .getPropertyValue("padding-bottom")
+      );
+  }
+
+  private setCurrentVerse() {
+    this.currentVerse = {
+      bookId:
+        localStorage.getItem("bookId") === null
+          ? 0
+          : parseInt(localStorage.getItem("bookId")),
+      chapterId:
+        localStorage.getItem("chapterId") === null
+          ? 0
+          : parseInt(localStorage.getItem("chapterId")),
+      verseId:
+        localStorage.getItem("verseText") === null
+          ? -1
+          : this.versesList.findIndex(
+              x => x.text == localStorage.getItem("verseText")
+            )
+      // ) - 1
+      // verseId: 0
+    };
+  }
+
+  findBeginningVerseId() {
     this.currentVerse.verseId =
       localStorage.getItem("verseText") === null
         ? -1
         : this.versesList.findIndex(
             x => x.text == localStorage.getItem("verseText")
           ) - 1;
-    await this.fillPage();
-  })();
-
-  setCurrentVerse() {
-    // this.currentVerse = {
-    //   bookId:
-    //     localStorage.getItem("bookId") === null
-    //       ? 0
-    //       : parseInt(localStorage.getItem("bookId")),
-    //   chapterId:
-    //     localStorage.getItem("chapterId") === null
-    //       ? 0
-    //       : parseInt(localStorage.getItem("chapterId")),
-    //   verseId: -1
-    //   // verseId: 0
-    // };
   }
 
   getAllBooksIds(allBooksData: any) {
     this.booksIdsList = allBooksData.data.map((el: any) => el.id);
-    // console.log(this.booksIdsList);
   }
 
   getAllChaptersIds(allBooksChaptersData: any) {
@@ -135,7 +150,7 @@ export default class DisplayPage {
     this.versesList.push(...newChapter);
   }
 
-  setFirstVerseOnPage() {
+  private setFirstVerseOnPage() {
     let kupa = 0;
     if (this.readingDirection == "forward") {
       kupa = 1;
@@ -155,17 +170,18 @@ export default class DisplayPage {
       this.beginVerse.chapterId = 0;
       this.beginVerse.verseId = 0;
     }
-    // localStorage.setItem("bookId", this.currentVerse.bookId.toString());
-    // localStorage.setItem("chapterId", this.currentVerse.chapterId.toString());
-    // if (this.currentVerse.verseId > 0) {
-    //   localStorage.setItem(
-    //     "verseText",
-    //     this.versesList[this.currentVerse.verseId + kupa].text
-    //   );
-    // }
+    //
+    localStorage.setItem("bookId", this.currentVerse.bookId.toString());
+    localStorage.setItem("chapterId", this.currentVerse.chapterId.toString());
+    if (this.currentVerse.verseId > 0) {
+      localStorage.setItem(
+        "verseText",
+        this.versesList[this.currentVerse.verseId + kupa].text
+      );
+    }
   }
 
-  setLastVerseOnPage() {
+  private setLastVerseOnPage() {
     // this.endVerse.bookId = this.currentVerse.bookId;
     // this.endVerse.chapterId = this.currentVerse.chapterId;
     // this.endVerse.verseId = this.currentVerse.verseId;
@@ -184,13 +200,13 @@ export default class DisplayPage {
     ].verseId;
   }
 
-  nextPage() {
+  private nextPage() {
     this.readingDirection = "forward";
     this.currentVerse = this.endVerse;
     this.fillPage();
   }
 
-  previousPage() {
+  private previousPage() {
     this.readingDirection = "backward";
     this.currentVerse = this.beginVerse;
     this.fillPage();
@@ -245,9 +261,10 @@ export default class DisplayPage {
     } else {
       this.setFirstVerseOnPage();
     }
+    // readingProgressBar.countCurrentChapterNumber();
   }
 
-  reachedChapterEnd(): boolean {
+  private reachedChapterEnd(): boolean {
     if (
       this.readingDirection == "forward" &&
       this.currentVerse.verseId == this.versesList.length - 1 &&
@@ -259,7 +276,7 @@ export default class DisplayPage {
     }
   }
 
-  reachedChapterBeginning(): boolean {
+  private reachedChapterBeginning(): boolean {
     if (this.readingDirection == "backward") {
       return true;
     } else {
@@ -267,7 +284,7 @@ export default class DisplayPage {
     }
   }
 
-  reachedBookEnd(): boolean {
+  private reachedBookEnd(): boolean {
     if (
       this.readingDirection == "forward" &&
       this.currentVerse.verseId == this.versesList.length - 1 &&
@@ -280,16 +297,19 @@ export default class DisplayPage {
     }
   }
 
-  canFillPage(): boolean {
+  private canFillPage(): boolean {
     if (this.readingDirection == "forward") {
       if (
-        this.currentVerse.verseId <= this.versesList.length - 1 &&
-        this.currentVerse.chapterId <= this.booksChaptersIdsList.length - 1 &&
-        this.currentVerse.bookId <= this.booksIdsList.length - 1
+        this.reachedBookEnd()
+        // this.currentVerse.verseId <= this.versesList.length - 1 &&
+        // this.currentVerse.chapterId <= this.booksChaptersIdsList.length - 1 &&
+        // this.currentVerse.bookId <= this.booksIdsList.length - 1
       ) {
-        return true;
-      } else {
         return false;
+        // return true;
+      } else {
+        return true;
+        // return false;
       }
     }
     if (this.readingDirection == "backward") {
@@ -301,7 +321,7 @@ export default class DisplayPage {
     }
   }
 
-  addTextToHtml() {
+  private addTextToHtml() {
     if (this.readingDirection == "forward") {
       this.currentVerse.verseId += 1;
       this.textContainer.insertAdjacentHTML(
@@ -317,7 +337,7 @@ export default class DisplayPage {
     }
   }
 
-  removeExcessText() {
+  private removeExcessText() {
     if (this.readingDirection == "forward") {
       this.textContainer.removeChild(this.textContainer.lastChild);
       if (this.currentVerse.verseId > 0) {
@@ -329,7 +349,7 @@ export default class DisplayPage {
     }
   }
 
-  textHeight(): number {
+  private textHeight(): number {
     if (this.textContainer.hasChildNodes()) {
       const textNodes: HTMLElement[] = Array.from(
         document.querySelectorAll(".page-text >*")
@@ -357,7 +377,7 @@ export default class DisplayPage {
     }
   }
 
-  render() {
+  private render() {
     const html: string = `
     <main class='container'>
         <div class='page'>

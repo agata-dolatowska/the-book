@@ -1,0 +1,78 @@
+.menu {
+  padding: 15px;
+  border-bottom: 1px solid black;
+  position: relative;
+  width: 100%;
+  height: 55px;
+}
+
+.table-of-contents {
+  width: 100%;
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.9);
+  top: 55px;
+  left: 0;
+  height: 550px;
+  z-index: 1;
+}
+
+.table-of-contents__form {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  align-content: center;
+  height: 100%;
+}
+
+.table-of-contents__input {
+  border: none;
+  border-bottom: 1px solid black;
+  font-size: 16px;
+}
+.book-name-input,
+.chapter-number-input {
+  background-color: transparent;
+}
+
+.book-name-input {
+  width: 200px;
+}
+
+.chapter-number-input {
+  width: 120px;
+  text-align: center;
+}
+
+.change-chapter-button {
+  display: block;
+  width: 50%;
+  height: 50px;
+  margin: 20px;
+}
+
+.book-name {
+  width: 100%;
+  text-align: center;
+  margin: 10px;
+}
+
+.chapter-number {
+  width: 100%;
+  text-align: center;
+  margin: 10px;
+}
+
+.book-name-autocomplete {
+  position: absolute;
+  top: 20px;
+  max-height: 100px;
+  overflow-y: scroll;
+  background-color: white;
+  text-align: left;
+  width: 100%;
+}
+
+.autocomplete-container {
+  position: relative;
+  display: inline-block;
+}
