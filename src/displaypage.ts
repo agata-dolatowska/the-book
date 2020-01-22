@@ -85,14 +85,7 @@ export default class DisplayPage {
         localStorage.getItem("chapterId") === null
           ? 0
           : parseInt(localStorage.getItem("chapterId")),
-      verseId:
-        localStorage.getItem("verseText") === null
-          ? -1
-          : this.versesList.findIndex(
-              x => x.text == localStorage.getItem("verseText")
-            )
-      // ) - 1
-      // verseId: 0
+      verseId: -1
     };
   }
 
@@ -222,11 +215,11 @@ export default class DisplayPage {
       }
     }
 
-    while (this.canFillPage() == true && this.textHeight() < this.pageSize) {
+    while (this.canFillPage() && this.textHeight() < this.pageSize) {
       if (this.reachedChapterBeginning() == true) {
       }
 
-      if (this.reachedChapterEnd() == true) {
+      if (this.reachedChapterEnd()) {
         this.currentVerse.chapterId += 1;
         this.getChapterVerses(
           await bookData.getChapterData(
@@ -235,7 +228,7 @@ export default class DisplayPage {
         );
       }
 
-      if (this.reachedBookEnd() == true) {
+      if (this.reachedBookEnd()) {
         this.currentVerse.bookId += 1;
         this.currentVerse.chapterId = 0;
         this.getAllChaptersIds(
@@ -261,7 +254,7 @@ export default class DisplayPage {
     } else {
       this.setFirstVerseOnPage();
     }
-    // readingProgressBar.countCurrentChapterNumber();
+    readingProgressBar.countCurrentChapterNumber();
   }
 
   private reachedChapterEnd(): boolean {
@@ -300,16 +293,16 @@ export default class DisplayPage {
   private canFillPage(): boolean {
     if (this.readingDirection == "forward") {
       if (
-        this.reachedBookEnd()
         // this.currentVerse.verseId <= this.versesList.length - 1 &&
         // this.currentVerse.chapterId <= this.booksChaptersIdsList.length - 1 &&
         // this.currentVerse.bookId <= this.booksIdsList.length - 1
+        this.currentVerse.verseId == this.versesList.length - 1 &&
+        this.currentVerse.chapterId == this.booksChaptersIdsList.length - 1 &&
+        this.currentVerse.bookId == this.booksIdsList.length - 1
       ) {
         return false;
-        // return true;
       } else {
         return true;
-        // return false;
       }
     }
     if (this.readingDirection == "backward") {

@@ -43,20 +43,21 @@ export default class TableOfContents {
 
   async getBibleData() {
     await this.saveBibleData(await bookData.getAllBooksNamesWithChapters());
-    return Object.freeze(this.bibleContents);
+    return this.bibleContents;
   }
 
   private async saveBibleData(bookContents: JSON) {
     let bibleDataStr = JSON.stringify(bookContents);
     let bibleDataArr = JSON.parse(bibleDataStr);
-
-    for (let x = 0; x < bibleDataArr.data.length; x++) {
-      this.bibleContents.push({
-        bookIdNum: x,
-        bookId: bibleDataArr.data[x].id,
-        bookNameLong: bibleDataArr.data[x].nameLong,
-        chapters: bibleDataArr.data[x].chapters
-      });
+    if (this.bibleContents.length == 0) {
+      for (let x = 0; x < bibleDataArr.data.length; x++) {
+        this.bibleContents.push({
+          bookIdNum: x,
+          bookId: bibleDataArr.data[x].id,
+          bookNameLong: bibleDataArr.data[x].nameLong,
+          chapters: bibleDataArr.data[x].chapters
+        });
+      }
     }
   }
 
@@ -114,7 +115,7 @@ export default class TableOfContents {
         x.bookNameLong.toLowerCase() == this.bookNameInput.value.toLowerCase()
     );
     if (foundBook) {
-      this.chapterLength = foundBook.chapters.length;
+      this.chapterLength = foundBook.chapters.length - 1;
       this.chapterNumberInput.setAttribute(
         "max",
         this.chapterLength.toString()
@@ -147,6 +148,7 @@ export default class TableOfContents {
           page.booksChaptersIdsList[page.currentVerse.chapterId]
         )
       );
+      this.setVisibility();
       page.fillPage();
     }
   }

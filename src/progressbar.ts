@@ -19,21 +19,19 @@ export default class ReadingProgressBar {
   })();
 
   private countAmountOfChapters() {
-    // tableOfContents.getBibleData().then(bibleContent => {
-    // console.log(bibleContent);
-    // this.bibleContents = bibleContent;
-    // console.log(bibleContent);
-    // for (let x of bibleContent) {
-    //   this.amountOfChapters += x.chapters.length;
-    // }
-    // this.countCurrentChapterNumber();
-    // });
+    tableOfContents.getBibleData().then(bibleContent => {
+      this.bibleContents = bibleContent;
+      for (let x of bibleContent) {
+        this.amountOfChapters += x.chapters.length;
+      }
+    });
   }
 
   countCurrentChapterNumber() {
     this.currentChapterNumber = 0;
-    for (let x = 0; x < this.bibleContents.length - 1; x++) {
-      for (let y = 0; y < this.bibleContents[x].chapters.length - 1; y++) {
+
+    for (let x = 0; x < this.bibleContents.length; x++) {
+      for (let y = 0; y < this.bibleContents[x].chapters.length; y++) {
         if (x == page.currentVerse.bookId && y == page.currentVerse.chapterId) {
           x = this.bibleContents.length - 1;
           y =
@@ -52,8 +50,8 @@ export default class ReadingProgressBar {
     const witdh: string = (
       (this.currentChapterNumber / this.amountOfChapters) *
       100
-    ).toPrecision(1);
-
+    ).toFixed();
+    console.log(witdh);
     progressBar.style.setProperty("--progressBarWidth", witdh + "%");
   }
 
