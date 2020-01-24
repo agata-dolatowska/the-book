@@ -51,7 +51,6 @@ export default class ReadingProgressBar {
       (this.currentChapterNumber / this.amountOfChapters) *
       100
     ).toFixed();
-    console.log(witdh);
     progressBar.style.setProperty("--progressBarWidth", witdh + "%");
   }
 
