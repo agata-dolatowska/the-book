@@ -5,31 +5,37 @@ export default class DisplayPage {
   private readingDirection: string = "forward";
   private pageSize: number;
   private textContainer: HTMLElement;
-  private chapterLength: number;
 
   booksIdsList: string[];
   booksChaptersIdsList: string[];
+
   versesList: {
     bookId: number;
     chapterId: number;
-    verseId: number;
     text: string;
   }[] = [];
-  currentVerse: { [key: string]: number } = {
-    bookId: 0,
-    chapterId: 0,
-    verseId: 0
+
+  currentVersesList: {
+    bookId: number;
+    chapterId: number;
+    text: string;
+  }[] = [];
+
+  currentVerse: {
+    bookId: number;
+    chapterId: number;
+    text: string;
   };
-  beginVerse: { [key: string]: number } = {
-    bookId: 0,
-    chapterId: 0,
-    verseId: 0
-  };
-  endVerse: { [key: string]: number } = {
-    bookId: 0,
-    chapterId: 0,
-    verseId: 0
-  };
+  beginVerse: {
+    bookId: number;
+    chapterId: number;
+    text: string;
+  } = { bookId: 0, chapterId: 0, text: "" };
+  endVerse: {
+    bookId: number;
+    chapterId: number;
+    text: string;
+  } = { bookId: 0, chapterId: 0, text: "" };
 
   private init = (async () => {
     this.render();
@@ -57,7 +63,7 @@ export default class DisplayPage {
         this.booksChaptersIdsList[this.currentVerse.chapterId]
       )
     );
-    this.findBeginningVerseId();
+    this.findBeginningVerseText();
     await this.fillPage();
   })();
 
@@ -77,6 +83,7 @@ export default class DisplayPage {
   }
 
   private setCurrentVerse() {
+    //koniec biblii 65, 22
     this.currentVerse = {
       bookId:
         localStorage.getItem("bookId") === null
@@ -84,20 +91,17 @@ export default class DisplayPage {
           : parseInt(localStorage.getItem("bookId")),
       chapterId:
         localStorage.getItem("chapterId") === null
-          ? 0
+          ? 3
           : parseInt(localStorage.getItem("chapterId")),
-      verseId: -1
+      text: ""
     };
   }
 
-  findBeginningVerseId() {
-    this.currentVerse.verseId =
+  findBeginningVerseText() {
+    this.currentVerse.text =
       localStorage.getItem("verseText") === null
-        ? -1
-        : this.versesList.findIndex(
-            x => x.text == localStorage.getItem("verseText")
-          );
-    // ) - 1;
+        ? ""
+        : localStorage.getItem("verseText");
   }
 
   getAllBooksIds(allBooksData: any) {
@@ -115,23 +119,23 @@ export default class DisplayPage {
     let newChapter: {
       bookId: number;
       chapterId: number;
-      verseId: number;
       text: string;
     }[] = [];
 
     if (chapterData.data.number != "intro") {
       newChapter.push({
         bookId: this.currentVerse.bookId,
-        chapterId: this.currentVerse.chapterId,
-        verseId: this.versesList.length,
+        chapterId: parseInt(chapterData.data.number),
         text: `<h2>${chapterData.data.reference}</h2>`
       });
     }
     for (let i = 0; i < newChapterText.length - 1; i++)
       newChapter.push({
         bookId: this.currentVerse.bookId,
-        chapterId: this.currentVerse.chapterId,
-        verseId: i + this.versesList.length + 1,
+        chapterId:
+          chapterData.data.number == "intro"
+            ? 0
+            : parseInt(chapterData.data.number),
         text: newChapterText[i] + "</p>"
       });
     if (chapterData.data.number == "intro") {
@@ -145,7 +149,6 @@ export default class DisplayPage {
     if (this.readingDirection == "forward") {
       this.versesList.push(...newChapter);
     } else {
-      this.chapterLength = newChapter.length;
       this.versesList.unshift(...newChapter);
     }
   }
@@ -162,8 +165,7 @@ export default class DisplayPage {
 
   deleteChapter(uniqueChapters: number[]) {
     //kupa
-    // console.log(uniqueChapters[uniqueChapters.length - 1]);
-    // console.log(this.currentVerse.chapterId);
+
     if (
       uniqueChapters[uniqueChapters.length - 1] == this.currentVerse.chapterId
     ) {
@@ -185,51 +187,21 @@ export default class DisplayPage {
   }
 
   private setFirstVerseOnPage() {
-    let kupa = 0;
-    if (this.readingDirection == "forward") {
-      kupa = 1;
-    }
-
     if (this.versesList.length > 1) {
-      this.beginVerse.bookId = this.versesList[
-        this.currentVerse.verseId + kupa
-      ].bookId;
-      this.beginVerse.chapterId = this.versesList[
-        this.currentVerse.verseId + kupa
-      ].chapterId;
-      this.beginVerse.verseId = this.versesList[
-        this.currentVerse.verseId + kupa
-      ].verseId;
-    } else {
-      this.beginVerse.bookId = 0;
-      this.beginVerse.chapterId = 0;
-      this.beginVerse.verseId = 0;
-    }
+      this.beginVerse.bookId = this.currentVerse.bookId;
+      this.beginVerse.chapterId = this.currentVerse.chapterId;
+      this.beginVerse.text = this.currentVerse.text;
 
-    localStorage.setItem("bookId", this.beginVerse.bookId.toString());
-    localStorage.setItem("chapterId", this.beginVerse.chapterId.toString());
-    if (this.beginVerse.verseId > 0) {
-      localStorage.setItem(
-        "verseText",
-        this.versesList[this.beginVerse.verseId].text
-      );
+      // localStorage.setItem("bookId", this.beginVerse.bookId.toString());
+      // localStorage.setItem("chapterId", this.beginVerse.chapterId.toString());
+      // localStorage.setItem("verseText", this.currentVerse.text);
     }
   }
 
   private setLastVerseOnPage() {
-    let kupa = 0;
-    if (this.readingDirection == "backward") {
-      kupa = -1;
-    }
-    this.endVerse.bookId = this.versesList[
-      this.currentVerse.verseId + kupa
-    ].bookId;
-    this.endVerse.chapterId = this.versesList[
-      this.currentVerse.verseId + kupa
-    ].chapterId;
-    this.endVerse.verseId = this.versesList[
-      this.currentVerse.verseId + kupa
-    ].verseId;
+    this.endVerse.bookId = this.currentVerse.bookId;
+    this.endVerse.chapterId = this.currentVerse.chapterId;
+    this.endVerse.text = this.currentVerse.text;
   }
 
   private nextPage() {
@@ -247,54 +219,67 @@ export default class DisplayPage {
   async fillPage() {
     if (this.canFillPage()) {
       this.textContainer.innerHTML = "";
-      if (this.readingDirection == "forward") {
-        this.setFirstVerseOnPage();
-      } else {
-        this.setLastVerseOnPage();
-      }
     }
-    while (this.canFillPage() && this.textHeight() < this.pageSize) {
-      if (this.reachedChapterBeginning()) {
-        console.log("początek rozdziałuuuu");
-        this.currentVerse.chapterId = this.beginVerse.chapterId - 1;
-        this.getChapterVerses(
-          await bookData.getChapterData(
-            this.booksChaptersIdsList[this.currentVerse.chapterId]
-          )
-        );
-        this.currentVerse.verseId += this.chapterLength - 1;
-      }
 
-      if (this.reachedChapterEnd()) {
-        // this.currentVerse.chapterId += 1;
-        this.getChapterVerses(
-          await bookData.getChapterData(
-            this.booksChaptersIdsList[this.currentVerse.chapterId + 1]
-          )
-        );
-      }
+    this.findBeginningVerse();
 
-      if (this.reachedBookBeginning()) {
-        console.log("początek księgi ELO!");
-      }
+    if (this.readingDirection == "forward") {
+      this.setFirstVerseOnPage();
+    } else {
+      this.setLastVerseOnPage();
+    }
 
-      if (this.reachedBookEnd()) {
-        this.currentVerse.bookId += 1;
-        this.currentVerse.chapterId = 0;
-        this.getAllChaptersIds(
-          await bookData.getBooksChaptersData(
-            this.booksIdsList[this.currentVerse.bookId]
-          )
-        );
-        this.getChapterVerses(
-          await bookData.getChapterData(
-            this.booksChaptersIdsList[this.currentVerse.chapterId]
-          )
-        );
-      }
+    for (let x of this.currentVersesList) {
+      this.currentVerse = {
+        bookId: x.bookId,
+        chapterId: x.chapterId,
+        text: x.text
+      };
+      if (this.textHeight() < this.pageSize) {
+        // if (this.reachedChapterBeginning()) {
+        // this.currentVerse.chapterId = this.beginVerse.chapterId - 1;
+        // this.getChapterVerses(
+        //   await bookData.getChapterData(
+        //     this.booksChaptersIdsList[this.currentVerse.chapterId]
+        //   )
+        // );
+        // this.currentVerse.text += this.chapterLength - 1;
 
-      this.addTextToHtml();
-      // this.limitVersesList();
+        // }
+
+        if (this.reachedChapterEnd()) {
+          this.getChapterVerses(
+            await bookData.getChapterData(
+              this.booksChaptersIdsList[this.currentVerse.chapterId + 1]
+            )
+          );
+          this.currentVersesList = this.versesList;
+        }
+
+        if (this.reachedBookEnd()) {
+          this.currentVerse.bookId += 1;
+          this.currentVerse.chapterId = 0;
+          this.getAllChaptersIds(
+            await bookData.getBooksChaptersData(
+              this.booksIdsList[this.currentVerse.bookId]
+            )
+          );
+          this.getChapterVerses(
+            await bookData.getChapterData(
+              this.booksChaptersIdsList[this.currentVerse.chapterId]
+            )
+          );
+          this.currentVersesList = this.versesList;
+        }
+
+        if ((this.readingDirection = "forward")) {
+          this.textContainer.insertAdjacentHTML("beforeend", `${x.text}`);
+        } else {
+          this.textContainer.insertAdjacentHTML("afterbegin", `${x.text}`);
+        }
+      } else {
+        break;
+      }
     }
 
     if (this.textHeight() > this.pageSize) {
@@ -306,37 +291,47 @@ export default class DisplayPage {
     } else {
       this.setFirstVerseOnPage();
     }
-    readingProgressBar.countCurrentChapterNumber();
+    console.log(this.beginVerse);
+    console.log(this.endVerse);
+    console.log(">>>>>>>>>>>>>>>>>>>>>");
+    // readingProgressBar.countCurrentChapterNumber();
   }
 
-  private reachedChapterEnd(): boolean {
-    const lastVerseId = this.versesList[this.versesList.length - 1].chapterId;
-    const firstVerseIdOfCurrentChapter = this.versesList.find(
-      x => x.chapterId == lastVerseId
-    ).verseId;
-    // console.log(firstVerseIdOfCurrentChapter);
-    // console.log(this.currentVerse.verseId);
-    if (
-      this.readingDirection == "forward" &&
-      this.currentVerse.verseId == this.versesList.length - 1 &&
-      this.currentVerse.chapterId < this.booksChaptersIdsList.length - 1
+  private findBeginningVerse() {
+    this.currentVersesList = this.versesList;
 
-      // this.readingDirection == "forward" &&
-      // this.currentVerse.verseId == firstVerseIdOfCurrentChapter &&
-      // this.currentVerse.chapterId < this.booksChaptersIdsList.length - 1
-    ) {
-      return true;
+    if (this.readingDirection == "forward") {
+      let beginningVerseId: number = 0;
+
+      if (this.endVerse.text != "") {
+        beginningVerseId =
+          this.currentVersesList.findIndex(x => x.text === this.endVerse.text) +
+          1;
+        this.currentVersesList = this.currentVersesList.slice(
+          beginningVerseId,
+          this.currentVersesList.length - 1
+        );
+      }
     } else {
-      return false;
+      let beginningVerseId: number = 0;
+
+      if (this.endVerse.text != "") {
+        beginningVerseId = this.versesList.findIndex(
+          x => x.text === this.beginVerse.text
+        );
+        this.currentVersesList = this.currentVersesList
+          .splice(0, beginningVerseId + 1)
+          .reverse();
+        console.log(this.currentVersesList);
+      }
     }
   }
 
   private reachedChapterBeginning(): boolean {
     if (
-      this.readingDirection == "backward" &&
-      // this.beginVerse.verseId <= 1 &&
-      this.beginVerse.verseId == 0 &&
-      this.beginVerse.chapterId > 0
+      this.readingDirection == "backward"
+      //&&
+      // this.checkIfFirstVerseInChapter()
     ) {
       return true;
     } else {
@@ -344,8 +339,12 @@ export default class DisplayPage {
     }
   }
 
-  private reachedBookBeginning(): boolean {
-    if (this.readingDirection == "backward" && this.beginVerse.chapterId == 0) {
+  private reachedChapterEnd(): boolean {
+    if (
+      this.readingDirection == "forward" &&
+      this.checkIfLastVerseInChapter() &&
+      this.currentVerse.chapterId < this.booksChaptersIdsList.length - 1
+    ) {
       return true;
     } else {
       return false;
@@ -355,7 +354,7 @@ export default class DisplayPage {
   private reachedBookEnd(): boolean {
     if (
       this.readingDirection == "forward" &&
-      this.currentVerse.verseId == this.versesList.length - 1 &&
+      this.checkIfLastVerseInChapter() &&
       this.currentVerse.chapterId == this.booksChaptersIdsList.length - 1 &&
       this.currentVerse.bookId < this.booksIdsList.length - 1
     ) {
@@ -368,52 +367,66 @@ export default class DisplayPage {
   private canFillPage(): boolean {
     if (this.readingDirection == "forward") {
       if (
-        // this.currentVerse.verseId <= this.versesList.length - 1 &&
-        // this.currentVerse.chapterId <= this.booksChaptersIdsList.length - 1 &&
-        // this.currentVerse.bookId <= this.booksIdsList.length - 1
-        this.currentVerse.verseId == this.versesList.length - 1 &&
-        this.currentVerse.chapterId == this.booksChaptersIdsList.length - 1 &&
-        this.currentVerse.bookId == this.booksIdsList.length - 1
+        !this.checkIfLastVerseInChapter() &&
+        this.currentVerse.chapterId <= this.booksChaptersIdsList.length - 1 &&
+        this.currentVerse.bookId <= this.booksIdsList.length - 1
       ) {
-        return false;
-      } else {
         return true;
+      } else {
+        return false;
       }
     }
+
     if (this.readingDirection == "backward") {
-      if (this.currentVerse.verseId > 0) {
-        return true;
-      } else {
-        return false;
-      }
+      //   if (this.currentVerse.text > 0) {
+      return true;
+      //   } else {
+      //     return false;
+      //   }
     }
   }
 
-  private addTextToHtml() {
-    if (this.readingDirection == "forward") {
-      this.currentVerse.verseId += 1;
-      this.textContainer.insertAdjacentHTML(
-        "beforeend",
-        `${this.versesList[this.currentVerse.verseId].text}`
-      );
+  checkIfFirstVerseInChapter(): boolean {
+    const currentChapter = this.versesList.filter(
+      x => x.chapterId == this.currentVerse.chapterId
+    );
+    if (currentChapter[0].text == this.beginVerse.text) {
+      return true;
     } else {
-      this.currentVerse.verseId -= 1;
-      this.textContainer.insertAdjacentHTML(
-        "afterbegin",
-        `${this.versesList[this.currentVerse.verseId].text}`
-      );
+      return false;
+    }
+  }
+
+  checkIfLastVerseInChapter(): boolean {
+    const currentChapter = this.versesList.filter(
+      x => x.chapterId == this.currentVerse.chapterId
+    );
+
+    if (
+      currentChapter[currentChapter.length - 1].text == this.currentVerse.text
+    ) {
+      return true;
+    } else {
+      return false;
     }
   }
 
   private removeExcessText() {
     if (this.readingDirection == "forward") {
       this.textContainer.removeChild(this.textContainer.lastChild);
-      if (this.currentVerse.verseId > 0) {
-        this.currentVerse.verseId -= 1;
-      }
+
+      const newCurrentVerse = this.textContainer.children[
+        this.textContainer.childNodes.length - 1
+      ].outerHTML;
+      this.currentVerse = {
+        bookId: this.versesList.find(x => x.text == newCurrentVerse).bookId,
+        chapterId: this.versesList.find(x => x.text == newCurrentVerse)
+          .chapterId,
+        text: newCurrentVerse
+      };
     } else {
       this.textContainer.removeChild(this.textContainer.firstChild);
-      this.currentVerse.verseId += 1;
+      this.currentVerse.text += 1;
     }
   }
 

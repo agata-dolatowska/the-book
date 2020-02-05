@@ -136,7 +136,8 @@ export default class TableOfContents {
     ) {
       page.currentVerse.bookId = this.bookId;
       page.currentVerse.chapterId = chapterNumber;
-      page.currentVerse.verseId = 0;
+      //KUPA TUTAJ
+      // page.currentVerse.verseId = 0;
       page.versesList = [];
       page.getAllChaptersIds(
         await bookData.getBooksChaptersData(
