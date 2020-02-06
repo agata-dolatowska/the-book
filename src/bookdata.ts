@@ -7,29 +7,29 @@ export default class BookData {
     this.apiKey = configKey;
   }
 
-  async getAllBooksData(): Promise<JSON> {
-    const allBooksData: Response = await fetch(
-      `${this.apiUrl}/${this.bibleLang}/books`,
-      {
-        headers: {
-          "api-key": this.apiKey
-        }
-      }
-    );
-    return allBooksData.json();
-  }
+  // async getAllBooksData(): Promise<JSON> {
+  //   const allBooksData: Response = await fetch(
+  //     `${this.apiUrl}/${this.bibleLang}/books`,
+  //     {
+  //       headers: {
+  //         "api-key": this.apiKey
+  //       }
+  //     }
+  //   );
+  //   return allBooksData.json();
+  // }
 
-  async getBooksChaptersData(bookId: string): Promise<JSON> {
-    const booksChaptersData: Response = await fetch(
-      `${this.apiUrl}/${this.bibleLang}/books/${bookId}/chapters`,
-      {
-        headers: {
-          "api-key": this.apiKey
-        }
-      }
-    );
-    return booksChaptersData.json();
-  }
+  // async getBooksChaptersData(bookId: string): Promise<JSON> {
+  //   const booksChaptersData: Response = await fetch(
+  //     `${this.apiUrl}/${this.bibleLang}/books/${bookId}/chapters`,
+  //     {
+  //       headers: {
+  //         "api-key": this.apiKey
+  //       }
+  //     }
+  //   );
+  //   return booksChaptersData.json();
+  // }
 
   async getChapterData(chapterId: string): Promise<JSON> {
     const chapterVerses: Response = await fetch(
@@ -52,6 +52,7 @@ export default class BookData {
         }
       }
     );
+
     return bibleContents.json();
   }
 }

@@ -1,5 +1,5 @@
 import { bookData } from "./index";
-import { page } from "./index";
+import { displayedPage } from "./index";
 
 export default class TableOfContents {
   bibleContents: {
@@ -7,7 +7,7 @@ export default class TableOfContents {
     bookIdNum: number;
     bookNameLong: string;
     chapters: {
-      id: number;
+      id: string;
     }[];
   }[] = [];
   private bookNameInput: HTMLInputElement;
@@ -18,8 +18,8 @@ export default class TableOfContents {
   private bookId: number;
 
   private init = (async () => {
-    this.getBibleData();
     this.render();
+    await this.getBibleData();
 
     document
       .querySelector(".show-table-of-contents")
@@ -42,14 +42,17 @@ export default class TableOfContents {
   })();
 
   async getBibleData() {
+    // console.log(this.bibleContents.length);
     await this.saveBibleData(await bookData.getAllBooksNamesWithChapters());
     return this.bibleContents;
   }
 
-  private async saveBibleData(bookContents: JSON) {
+  async saveBibleData(bookContents: JSON) {
     let bibleDataStr = JSON.stringify(bookContents);
     let bibleDataArr = JSON.parse(bibleDataStr);
+
     if (this.bibleContents.length == 0) {
+      console.log("długoooość " + this.bibleContents.length);
       for (let x = 0; x < bibleDataArr.data.length; x++) {
         this.bibleContents.push({
           bookIdNum: x,
@@ -59,6 +62,8 @@ export default class TableOfContents {
         });
       }
     }
+    // console.log(this.bibleContents);
+    // console.log("TUTAAAAAAJ " + this.bibleContents.length);
   }
 
   private findBook() {
@@ -134,28 +139,29 @@ export default class TableOfContents {
       chapterNumber < this.chapterLength &&
       this.bookNameInput.value != ""
     ) {
-      page.currentVerse.bookId = this.bookId;
-      page.currentVerse.chapterId = chapterNumber;
+      displayedPage.currentVerse.bookId = this.bookId;
+      displayedPage.currentVerse.chapterId = chapterNumber;
       //KUPA TUTAJ
       // page.currentVerse.verseId = 0;
-      page.versesList = [];
-      page.getAllChaptersIds(
-        await bookData.getBooksChaptersData(
-          page.booksIdsList[page.currentVerse.bookId]
-        )
-      );
-      page.getChapterVerses(
-        await bookData.getChapterData(
-          page.booksChaptersIdsList[page.currentVerse.chapterId]
-        )
-      );
+      displayedPage.versesList = [];
+      // page.getAllChaptersIds(
+      //   await bookData.getBooksChaptersData(
+      //     page.booksIdsList[page.currentVerse.bookId]
+      //   )
+      // );
+      // page.getChapterVerses(
+      //   await bookData.getChapterData(
+      //     page.booksChaptersIdsList[page.currentVerse.chapterId]
+      //   )
+      // );
       this.setVisibility();
-      page.fillPage();
+      //page.fillPage();
     }
   }
 
   private render() {
     const html: string = `
+    <main class='container'>
     <div class="menu">
     <button class='show-table-of-contents button'>Go to...</button>
     <div class='table-of-contents hidden'>
@@ -176,6 +182,6 @@ export default class TableOfContents {
     </form>
     </div>
     </div>`;
-    document.querySelector("main").insertAdjacentHTML("afterbegin", html);
+    document.querySelector("body").insertAdjacentHTML("afterbegin", html);
   }
 }

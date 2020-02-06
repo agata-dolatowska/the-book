@@ -1,4 +1,4 @@
-import { tableOfContents, page } from "./index";
+import { tableOfContents, displayedPage } from "./index";
 
 export default class ReadingProgressBar {
   bibleContents: {
@@ -15,24 +15,28 @@ export default class ReadingProgressBar {
 
   private init = (() => {
     this.render();
-    this.countAmountOfChapters();
+    // this.countAmountOfChapters();
   })();
 
-  private countAmountOfChapters() {
-    tableOfContents.getBibleData().then(bibleContent => {
-      this.bibleContents = bibleContent;
-      for (let x of bibleContent) {
-        this.amountOfChapters += x.chapters.length;
-      }
-    });
-  }
+  // private countAmountOfChapters() {
+  //   tableOfContents.getBibleData().then(bibleContent => {
+  //     this.bibleContents = bibleContent;
+  //     for (let x of bibleContent) {
+  //       this.amountOfChapters += x.chapters.length;
+  //     }
+  //   });
+  //   // console.log(this.bibleContents);
+  // }
 
   countCurrentChapterNumber() {
     this.currentChapterNumber = 0;
 
     for (let x = 0; x < this.bibleContents.length; x++) {
       for (let y = 0; y < this.bibleContents[x].chapters.length; y++) {
-        if (x == page.currentVerse.bookId && y == page.currentVerse.chapterId) {
+        if (
+          x == displayedPage.currentVerse.bookId &&
+          y == displayedPage.currentVerse.chapterId
+        ) {
           x = this.bibleContents.length - 1;
           y =
             this.bibleContents[this.bibleContents.length - 1].chapters.length -
