@@ -1,11 +1,11 @@
-import { tableOfContents } from "./index";
-import { bookData } from "./index";
-import { readingProgressBar } from "./index";
+import Verse from "./verse";
+import BookData from "./bookdata";
 
 export default class DisplayedPage {
   private readingDirection: string = "forward";
   private pageSize: number;
   private textContainer: HTMLElement;
+  private bookData: BookData;
 
   versesList: {
     bookId: number;
@@ -13,7 +13,7 @@ export default class DisplayedPage {
     text: string;
   }[] = [];
 
-  bibleContents: {
+  tableOfContentsData: {
     bookId: string;
     bookIdNum: number;
     bookNameLong: string;
@@ -27,23 +27,17 @@ export default class DisplayedPage {
   //   text: string;
   // }[] = [];
 
-  currentVerse: {
-    bookId: number;
-    chapterId: number;
-    text: string;
-  };
-  beginVerse: {
-    bookId: number;
-    chapterId: number;
-    text: string;
-  } = { bookId: 0, chapterId: 0, text: "" };
-  endVerse: {
-    bookId: number;
-    chapterId: number;
-    text: string;
-  } = { bookId: 0, chapterId: 0, text: "" };
+  currentVerse: Verse;
+  beginVerse: Verse = { bookId: 0, chapterId: 0, text: "" };
+  endVerse: Verse = { bookId: 0, chapterId: 0, text: "" };
 
-  private init = (async () => {
+  eloszka: number = 0;
+  constructor(kupa: BookData) {
+    this.bookData = kupa;
+    this.eloszka = 8;
+  }
+
+  private init = (() => {
     this.render();
     // document
     //   .querySelector(".previous")
@@ -58,11 +52,12 @@ export default class DisplayedPage {
 
     this.setCurrentVerse();
 
-    this.setBibleContents();
-    // console.log(this.bibleContents[this.currentVerse.bookId]);
+    this.getTableOfContentsData();
+    // this.setBibleContents();
+    // console.log(this.tableOfContentsData[this.currentVerse.bookId]);
     // this.getChapterVerses(
     //   await bookData.getChapterData(
-    //     // this.bibleContents[this.currentVerse.bookId].chapters[this.currentVerse.chapterId]
+    //     // this.tableOfContentsData[this.currentVerse.bookId].chapters[this.currentVerse.chapterId]
     //   )
     // );
     this.findBeginningVerseText();
@@ -106,9 +101,14 @@ export default class DisplayedPage {
         : localStorage.getItem("verseText");
   }
 
-  private setBibleContents() {
+  getTableOfContentsData() {
+    console.log(this.bookData);
+    console.log(this.eloszka);
+    // this.bookData.getAllBooksNamesWithChapters();
+    // console.log(kupa);
+    // private setBibleContents() {
     // tableOfContents.getBibleData().then(
-    //   x => (this.bibleContents = x)
+    //   x => (this.tableOfContentsData = x)
     // async bibleContent => {
     // this.getChapterVerses(
     //   await bookData.getChapterData(
@@ -119,7 +119,7 @@ export default class DisplayedPage {
     // );
     // });
     // );
-    // console.log(this.bibleContents);
+    // console.log(this.tableOfContentsData);
   }
 
   getChapterVerses(chapterJSONData: JSON) {

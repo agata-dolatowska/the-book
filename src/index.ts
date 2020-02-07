@@ -5,7 +5,7 @@ import DisplayedPage from "./displayedpage";
 import TableOfContents from "./tableofcontents";
 import ReadingProgressBar from "./progressBar";
 
-export const bookData = new BookData(config.bibleApiKey);
-export const tableOfContents = new TableOfContents();
-export const displayedPage = new DisplayedPage();
-export const readingProgressBar = new ReadingProgressBar();
+const bookData = new BookData(config.bibleApiKey);
+let tableOfContents = new TableOfContents();
+let displayedPage = new DisplayedPage(bookData);
+// export const readingProgressBar = new ReadingProgressBar(bookData);
