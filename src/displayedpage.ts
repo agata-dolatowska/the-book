@@ -1,5 +1,6 @@
 import Verse from "./verse";
 import BookData from "./bookdata";
+import TableOfContents from "./tableofcontents";
 
 export default class DisplayedPage {
   private readingDirection: string = "forward";
@@ -8,6 +9,8 @@ export default class DisplayedPage {
   private bookData: BookData;
   private mustClearPage: boolean = true;
   private bibleEnd: boolean = false;
+  private bibleBegin: boolean = false;
+  private canSetVerse: boolean = true;
 
   versesList: {
     bookId: number;
@@ -57,7 +60,7 @@ export default class DisplayedPage {
           : parseInt(localStorage.getItem("bookId")),
       chapterId:
         localStorage.getItem("chapterId") === null
-          ? 2
+          ? 3
           : parseInt(localStorage.getItem("chapterId")),
       text: ""
     };
@@ -145,15 +148,15 @@ export default class DisplayedPage {
   }
 
   private setFirstVerseOnPage() {
-    if (this.versesList.length > 1) {
-      this.beginVerse.bookId = this.currentVerse.bookId;
-      this.beginVerse.chapterId = this.currentVerse.chapterId;
-      this.beginVerse.text = this.currentVerse.text;
+    // if (this.versesList.length > 1) {
+    this.beginVerse.bookId = this.currentVerse.bookId;
+    this.beginVerse.chapterId = this.currentVerse.chapterId;
+    this.beginVerse.text = this.currentVerse.text;
 
-      // localStorage.setItem("bookId", this.beginVerse.bookId.toString());
-      // localStorage.setItem("chapterId", this.beginVerse.chapterId.toString());
-      // localStorage.setItem("verseText", this.currentVerse.text);
-    }
+    // localStorage.setItem("bookId", this.beginVerse.bookId.toString());
+    // localStorage.setItem("chapterId", this.beginVerse.chapterId.toString());
+    // localStorage.setItem("verseText", this.currentVerse.text);
+    // }
   }
 
   private setLastVerseOnPage() {
@@ -202,17 +205,10 @@ export default class DisplayedPage {
         break;
       }
 
-      if (this.readingDirection == "forward") {
-        this.textContainer.insertAdjacentHTML(
-          "beforeend",
-          `${this.versesList[currentId].text}`
-        );
-      } else {
-        this.textContainer.insertAdjacentHTML(
-          "afterbegin",
-          `${this.versesList[currentId].text}`
-        );
-      }
+      this.textContainer.insertAdjacentHTML(
+        "beforeend",
+        `${this.versesList[currentId].text}`
+      );
     }
 
     if (this.textHeight() > this.pageSize) {
@@ -224,8 +220,6 @@ export default class DisplayedPage {
     } else {
       this.setFirstVerseOnPage();
     }
-    // console.log("begin ", this.beginVerse);
-    // console.log("end ", this.endVerse);
   }
 
   fillPageReverse() {
@@ -235,9 +229,12 @@ export default class DisplayedPage {
 
     let currentId = this.findBeginningVerseId();
     const currentIdCopy = currentId;
+
     console.log(">>>>>>>>>");
     console.log("begin back ", this.beginVerse);
     console.log("end back ", this.endVerse);
+
+    this.canSetVerse = true;
 
     for (currentId; this.textHeight() < this.pageSize; currentId--) {
       if (currentId != -1) {
@@ -253,52 +250,39 @@ export default class DisplayedPage {
       }
 
       if (this.reachedChapterBeginning()) {
-        console.log("początek rozdziału ;-;");
+        console.log("rozdział");
         this.currentVerse.chapterId--;
         this.addNewVerses();
+        this.canSetVerse = false;
         break;
       }
-      // if (this.reachedChapterEnd()) {
-      //   this.currentVerse.chapterId++;
-      //   this.addNewVerses();
-      //   this.textContainer.insertAdjacentHTML(
-      //     "beforeend",
-      //     `${this.versesList[currentId].text}`
-      //   );
-      //   break;
-      // }
 
-      // if (this.reachedBookEnd()) {
-      //   this.currentVerse.bookId++;
-      //   this.currentVerse.chapterId = 0;
-      //   this.addNewVerses();
-      //   break;
-      // }
-
-      // if (this.reachedBibleEnd()) {
-      //   this.bibleEnd = true;
-      //   break;
-      // }
-      // console.log(this.currentVerse);
-      if (this.readingDirection == "forward") {
-        this.textContainer.insertAdjacentHTML(
-          "beforeend",
-          `${this.versesList[currentId].text}`
-        );
-      } else {
-        this.textContainer.insertAdjacentHTML(
-          "afterbegin",
-          `${this.versesList[currentId].text}`
-        );
+      if (this.reachedBookBeginning()) {
+        console.log("księga");
+        // this.currentVerse.bookId--;
+        // this.addNewVerses();
+        // this.canSetVerse = false;
+        // break;
       }
+
+      // if (this.reachedBibleBeginning()) {
+      //   console.log("biblia");
+      //   this.bibleBegin = true;
+      //   // this.canSetVerse = false;
+      //   break;
+      // }
+
+      this.textContainer.insertAdjacentHTML(
+        "afterbegin",
+        `${this.versesList[currentId].text}`
+      );
     }
 
     if (this.textHeight() > this.pageSize) {
       this.removeExcessText();
     }
 
-    //    if (currentIdCopy == currentId && !this.textContainer.hasChildNodes()) {
-    if (!this.textContainer.hasChildNodes()) {
+    if (this.canSetVerse) {
       this.setFirstVerseOnPage();
     }
     // console.log(">>>>>>>>>");
@@ -336,10 +320,14 @@ export default class DisplayedPage {
 
   private reachedChapterBeginning(): boolean {
     if (
-      this.readingDirection == "backward" &&
-      this.beginVerse.text == this.versesList[0].text
-      // &&
-      // this.currentVerse.bookId != 0 && this.currentVerse.chapterId != 0
+      (this.currentVerse.text == this.versesList[0].text ||
+        this.beginVerse.text == this.versesList[0].text) &&
+      (this.tableOfContentsData[this.beginVerse.bookId].chapters[
+        this.beginVerse.chapterId
+      ].number > 0 ||
+        this.tableOfContentsData[this.currentVerse.bookId].chapters[
+          this.currentVerse.chapterId
+        ].number > 0)
     ) {
       return true;
     } else {
@@ -356,6 +344,19 @@ export default class DisplayedPage {
         this.tableOfContentsData[this.currentVerse.bookId].chapters[
           this.tableOfContentsData[this.currentVerse.bookId].chapters.length - 1
         ].number
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  private reachedBookBeginning(): boolean {
+    if (
+      this.beginVerse.text == this.versesList[0].text &&
+      this.tableOfContentsData[this.currentVerse.bookId].chapters[
+        this.currentVerse.chapterId
+      ].number == 0
     ) {
       return true;
     } else {
@@ -386,6 +387,14 @@ export default class DisplayedPage {
     }
   }
 
+  private reachedBibleBeginning(): boolean {
+    if (this.beginVerse.bookId == 0 && this.beginVerse.chapterId == 0) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   private reachedBibleEnd(): boolean {
     const currentChapterVerses = this.versesList.filter(
       x => x.chapterId == this.currentVerse.chapterId
@@ -406,6 +415,7 @@ export default class DisplayedPage {
   }
 
   private nextPage() {
+    this.bibleBegin = false;
     if (!this.bibleEnd) {
       this.readingDirection = "forward";
       this.mustClearPage = true;
@@ -415,11 +425,11 @@ export default class DisplayedPage {
 
   private previousPage() {
     this.bibleEnd = false;
-    // if(!this.bibleBegin){
-    this.readingDirection = "backward";
-    this.mustClearPage = true;
-    this.fillPageReverse();
-    //}
+    if (this.bibleBegin == false) {
+      this.readingDirection = "backward";
+      this.mustClearPage = true;
+      this.fillPageReverse();
+    }
   }
 
   private removeExcessText() {
